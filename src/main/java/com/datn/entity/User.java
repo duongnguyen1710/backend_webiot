@@ -28,6 +28,7 @@ public class User {
 	private String email;
 	private String password;
 	private String avatar; // URL của ảnh đại diện
+	private boolean verified = false;
 	
 	private Role role=Role.ROLE_CUSTOMER;
 	@JsonIgnore
