@@ -1,10 +1,16 @@
 package com.datn.controller;
 
 import java.util.Collection;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
+import com.datn.request.VerifiedEmailRequest;
+import com.datn.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -12,11 +18,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.datn.config.JwtProvider;
 import com.datn.entity.Cart;
@@ -42,6 +44,10 @@ public class AuthController {
 	private CustomerUserDetailsService customerUserDetailsService;
 	@Autowired
 	private CartRepository cartRepository;
+	@Autowired
+	private EmailService emailService;
+	@Autowired
+	private RedisTemplate<String, String> redisTemplate;
 	
 //	public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtProvider jwtProvider,
 //			CustomerUserDetailsService customerUserDetailsService, CartRepository cartRepository) {
@@ -55,7 +61,6 @@ public class AuthController {
 	
 	@PostMapping("/signup")
 	public ResponseEntity<AuthResponse>createUserHandler(@RequestBody User user) throws Exception{
-		
 		User isEmailExist = userRepository.findByEmail(user.getEmail());
 		if(isEmailExist!=null) {
 			throw new Exception("Email đã tồn tại");
@@ -72,6 +77,13 @@ public class AuthController {
 		Cart cart = new Cart();
 		cart.setCustomer(savedUser);
 		cartRepository.save(cart);
+
+		String otp = String.format("%06d", new Random().nextInt(999999));
+		redisTemplate.opsForValue().set(user.getEmail(), otp, 3, TimeUnit.MINUTES);
+
+		String subject = "Dương iot";
+		String text = "Chào " + savedUser.getFullName() + ",\n\nBạn đã đăng ký thành công trên hệ thống!"+ ",\n\nOTP :"+ otp;
+		emailService.sendEmail(savedUser.getEmail(), subject, text);
 		
 		Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
 		SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -121,4 +133,24 @@ public class AuthController {
 		}
 		return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 	}
+	@PostMapping("/verified")
+	public String sendOTP(@RequestBody VerifiedEmailRequest verifiedEmailRequest) {
+		String email = verifiedEmailRequest.getEmail();
+		String otp = verifiedEmailRequest.getOpt();
+
+		String storedOtp = redisTemplate.opsForValue().get(email);
+		if(storedOtp != null && storedOtp.equals(otp)){
+			return "Opt ko hợp lệ";
+		}
+		User user = userRepository.findByEmail(email);
+		if (user != null) {
+			user.setVerified(true);
+			userRepository.save(user);
+			redisTemplate.delete(email);
+			return "Email đã được xác thực thành công!";
+		} else {
+			return "Người dùng không tồn tại!";
+		}
+	}
 }
+
