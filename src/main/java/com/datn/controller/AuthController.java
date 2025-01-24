@@ -79,7 +79,7 @@ public class AuthController {
 		cartRepository.save(cart);
 
 		String otp = String.format("%06d", new Random().nextInt(999999));
-		redisTemplate.opsForValue().set(user.getEmail(), otp, 3, TimeUnit.MINUTES);
+		redisTemplate.opsForValue().set(user.getEmail(), otp, 10, TimeUnit.MINUTES);
 
 		String subject = "Dương iot";
 		String text = "Chào " + savedUser.getFullName() + ",\n\nBạn đã đăng ký thành công trên hệ thống!"+ ",\n\nOTP :"+ otp;
@@ -139,7 +139,9 @@ public class AuthController {
 		String otp = verifiedEmailRequest.getOpt();
 
 		String storedOtp = redisTemplate.opsForValue().get(email);
-		if(storedOtp != null && storedOtp.equals(otp)){
+		System.out.println(storedOtp);
+		System.out.println(otp);
+		if(storedOtp != null && !storedOtp.equals(otp)){
 			return "Opt ko hợp lệ";
 		}
 		User user = userRepository.findByEmail(email);
