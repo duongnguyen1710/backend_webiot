@@ -154,5 +154,26 @@ public class AuthController {
 			return "Người dùng không tồn tại!";
 		}
 	}
+
+	@PostMapping("/resend")
+	public ResponseEntity<String> resendOtp(@RequestBody VerifiedEmailRequest verifiedEmailRequest) {
+		String email = verifiedEmailRequest.getEmail();
+
+		User user = userRepository.findByEmail(email);
+		if (user == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Người dùng không tồn tại!");
+		}
+
+		String otp = String.format("%06d", new Random().nextInt(999999));
+
+		redisTemplate.opsForValue().set(email, otp, 10, TimeUnit.MINUTES);
+
+		String subject = "Xác thực email - OTP mới";
+		String text = "Chào " + user.getFullName() + ",\n\nMã OTP mới của bạn là: " + otp + "\n\nOTP có hiệu lực trong 10 phút.";
+		emailService.sendEmail(email, subject, text);
+
+		return ResponseEntity.ok("OTP mới đã được gửi đến email của bạn!");
+	}
+
 }
 
