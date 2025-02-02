@@ -2,6 +2,8 @@ package com.datn.controller;
 
 import java.util.List;
 
+import com.datn.response.ZaloPayResponse;
+import com.datn.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,10 +24,6 @@ import com.datn.repository.OrdersRepository;
 import com.datn.request.OrderRequest;
 import com.datn.response.StripeResponse;
 import com.datn.response.VnPayResponse;
-import com.datn.service.OrderService;
-import com.datn.service.StripeService;
-import com.datn.service.UserService;
-import com.datn.service.VnPayService;
 
 @RestController
 @CrossOrigin
@@ -49,9 +47,9 @@ public class OrderController {
 //	@Autowired
 //	private PaypalServices paypalServices;
 //	
-//	@Autowired
-//	private ZaloPayService zaloPayService;
-//	
+	@Autowired
+	private ZaloPayService zaloPayService;
+
 //	@Autowired
 //	private MomoService momoService;
 	//VNPay
@@ -93,6 +91,12 @@ public class OrderController {
 	            ordersRepository.save(order); // Lưu đơn hàng với paymentType đã cập nhật
 	            StripeResponse stripeRes = stripeService.createPaymentLink(order);
 	            return new ResponseEntity<>(stripeRes, HttpStatus.OK);
+
+			case "zalopay":
+				order.setPaymentType(2); // 3: Stripe
+				ordersRepository.save(order); // Lưu đơn hàng với paymentType đã cập nhật
+				ZaloPayResponse zaloPayResponse= zaloPayService.createZaloPayLink(order);
+				return new ResponseEntity<>(zaloPayResponse, HttpStatus.OK);
 
 	        case "cod":
 	            order.setPaymentType(4); // 4: COD
