@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import com.datn.request.UpdatePasswordRequest;
 import com.datn.request.VerifiedEmailRequest;
 import com.datn.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -174,6 +175,88 @@ public class AuthController {
 
 		return ResponseEntity.ok("OTP mới đã được gửi đến email của bạn!");
 	}
+
+	@PostMapping("/forgot-password")
+	public ResponseEntity<String> forgotPassword(@RequestBody VerifiedEmailRequest request) {
+		String email = request.getEmail();
+
+		// Kiểm tra người dùng có tồn tại không
+		User user = userRepository.findByEmail(email);
+		if (user == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Người dùng không tồn tại!");
+		}
+
+		// Kiểm tra xem email đã được xác thực chưa
+		if (!user.isVerified()) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Email chưa được xác thực. Vui lòng xác thực email trước khi đặt lại mật khẩu!");
+		}
+
+		// Tạo OTP ngẫu nhiên
+		String otp = String.format("%06d", new Random().nextInt(999999));
+
+		// Lưu OTP vào Redis với thời gian hết hạn là 10 phút
+		redisTemplate.opsForValue().set(email, otp, 10, TimeUnit.MINUTES);
+
+		// Gửi email chứa OTP
+		String subject = "Đặt lại mật khẩu - Mã OTP";
+		String text = "Chào " + user.getFullName() + ",\n\nMã OTP để đặt lại mật khẩu của bạn là: " + otp + "\n\nOTP có hiệu lực trong 10 phút.";
+		emailService.sendEmail(email, subject, text);
+
+		return ResponseEntity.ok("OTP đặt lại mật khẩu đã được gửi đến email của bạn!");
+	}
+
+	@PostMapping("/verify-reset-password")
+	public ResponseEntity<String> verifyResetPasswordOtp(@RequestBody VerifiedEmailRequest request) {
+		String email = request.getEmail();
+		String otp = request.getOpt();
+
+		// Lấy OTP từ Redis
+		String storedOtp = redisTemplate.opsForValue().get(email);
+
+		// Kiểm tra OTP có hợp lệ không
+		if (storedOtp == null) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mã OTP đã hết hạn hoặc không tồn tại!");
+		}
+		if (!storedOtp.equals(otp)) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mã OTP không hợp lệ!");
+		}
+
+		// Nếu OTP hợp lệ, xóa OTP khỏi Redis
+		redisTemplate.delete(email);
+
+		// Lưu trạng thái đã xác thực OTP vào Redis (có hiệu lực 15 phút)
+		redisTemplate.opsForValue().set("verified:" + email, "true", 15, TimeUnit.MINUTES);
+
+		return ResponseEntity.ok("Mã OTP hợp lệ! Bạn có thể đặt lại mật khẩu.");
+	}
+
+	@PostMapping("/reset-password")
+	public ResponseEntity<String> resetPassword(@RequestBody UpdatePasswordRequest request) {
+		String email = request.getEmail();
+		String newPassword = request.getNewPassword();
+
+		// Kiểm tra xem email đã được xác thực bằng OTP chưa
+		String verificationStatus = redisTemplate.opsForValue().get("verified:" + email);
+		if (verificationStatus == null || !verificationStatus.equals("true")) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Bạn chưa xác thực OTP. Vui lòng thực hiện bước xác thực OTP trước!");
+		}
+
+		// Tìm người dùng theo email
+		User user = userRepository.findByEmail(email);
+		if (user == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Người dùng không tồn tại!");
+		}
+
+		// Cập nhật mật khẩu mới (đã mã hóa)
+		user.setPassword(passwordEncoder.encode(newPassword));
+		userRepository.save(user);
+
+		// Xóa trạng thái xác thực OTP khỏi Redis để tránh lặp lại việc đặt mật khẩu
+		redisTemplate.delete("verified:" + email);
+
+		return ResponseEntity.ok("Mật khẩu đã được đặt lại thành công!");
+	}
+
 
 }
 
