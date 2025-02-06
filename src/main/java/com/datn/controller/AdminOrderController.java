@@ -1,10 +1,12 @@
 package com.datn.controller;
 
+import com.datn.repository.OrdersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,12 +20,17 @@ import org.springframework.web.bind.annotation.RestController;
 import com.datn.entity.Orders;
 import com.datn.service.OrderService;
 
+import java.util.Date;
+
 @RestController
 @CrossOrigin
 @RequestMapping("/api/admin/orders")
 public class AdminOrderController {
 	@Autowired
 	private OrderService orderService;
+
+	@Autowired
+	private OrdersRepository ordersRepository;
 
 	@GetMapping
 	public Page<Orders> getAllOrdersPaginated(@RequestParam(defaultValue = "0") int page,
@@ -60,4 +67,17 @@ public class AdminOrderController {
         Long totalOrders = orderService.getTotalOrders();
         return ResponseEntity.ok(totalOrders);
     }
+
+	@GetMapping("/filter-by-date")
+	public Page<Orders> filterOrdersByDate(
+			@RequestParam(value = "startDate", required = false)
+			@DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+
+			@RequestParam(value = "endDate", required = false)
+			@DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
+
+			Pageable pageable) {
+
+		return ordersRepository.findByCreateAtBetweenOptional(startDate, endDate, pageable);
+	}
 }
