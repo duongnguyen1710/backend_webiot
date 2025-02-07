@@ -71,17 +71,17 @@ public class ProductController {
     public List<Product> searchProducts(@RequestParam String query) {
         return productService.searchProducts(query);
     }
-	
+
 	@GetMapping("/page/{categoryId}/{restaurantId}")
 	public Page<Product> getProducts(
-	        @PathVariable Long categoryId,
-	        @PathVariable Long restaurantId,
-	        @RequestParam(defaultValue = "0") int page,
-	        @RequestParam(defaultValue = "10") int size
+			@PathVariable Long categoryId,
+			@PathVariable Long restaurantId,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size
 	) {
-	    return productService.getProductsByCategoryAndRestaurant(categoryId, restaurantId, page, size);
+		return productService.getProductsByCategoryAndRestaurant(categoryId, restaurantId, page, size);
 	}
-	
+
 	@GetMapping("/filter")
 	public List<Product> getProductsByCategoryItem1(
 	        @RequestParam(required = false) Long categoryItemId,
