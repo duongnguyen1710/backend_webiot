@@ -53,10 +53,10 @@ public class OrderServiceImp implements OrderService {
 		Address shippAddress = order.getDeliveryAddress();
 		Address savedAddress = addressRepository.save(shippAddress);
 
-		if (!user.getAddresses().contains(savedAddress)) {
-			user.getAddresses().add(savedAddress);
-			userRepository.save(user);
-		}
+//		if (!user.getAddresses().contains(savedAddress)) {
+//			user.getAddresses().add(savedAddress);
+//			userRepository.save(user);
+//		}
 
 		Restaurant restaurant = restaurantService.findRestaurantById(order.getRestaurantId());
 
