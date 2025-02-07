@@ -1,7 +1,9 @@
 package com.datn.controller;
 
 import java.util.List;
+import java.util.Optional;
 
+import com.datn.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -38,6 +40,9 @@ public class AdminProductController {
 
 	@Autowired
 	private RestaurantService restaurantService;
+
+	@Autowired
+	private ProductRepository productRepository;
 
 	@PostMapping
 	public ResponseEntity<Product> createProduct(@RequestBody CreateProductRequest req,
@@ -95,5 +100,24 @@ public class AdminProductController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
+
+	@PutMapping("/{productId}/update-status")
+	public ResponseEntity<?> updateProductStatus(@PathVariable Long productId, @RequestParam int status) {
+		Optional<Product> optionalProduct = productRepository.findById(productId);
+
+		if (!optionalProduct.isPresent()) {
+			return ResponseEntity.badRequest().body("Không tìm thấy sản phẩm!");
+		}
+
+		if (status != 1 && status != 0) {
+			return ResponseEntity.badRequest().body("Trạng thái không hợp lệ! Chỉ chấp nhận 1 (Còn hàng) hoặc 2 (Hết hàng).");
+		}
+
+		Product product = optionalProduct.get();
+		product.setStatus(status);
+		productRepository.save(product);
+
+		return ResponseEntity.ok("Cập nhật trạng thái sản phẩm thành công! Trạng thái mới: " + (status == 1 ? "Còn hàng" : "Hết hàng"));
+	}
 
 }
