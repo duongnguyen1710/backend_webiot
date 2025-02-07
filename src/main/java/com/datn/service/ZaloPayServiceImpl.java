@@ -69,7 +69,7 @@ public class ZaloPayServiceImpl implements ZaloPayService {
         orderData.put("amount", totalPrice);
 
         Map<String, String> embedData = new HashMap<>();
-        embedData.put("redirecturl", "http://localhost:3000/payment/success/" + orders.getId());
+        embedData.put("redirecturl", "http://localhost:3001/payment/zalopay/result/");
 
         String itemsJson = itemsJsonArray.toString();
         String embedDataJson = new JSONObject(embedData).toString();
