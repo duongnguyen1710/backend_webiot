@@ -15,18 +15,18 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 	List<Product> findByRestaurantId(Long restaurantId);
 	
 	 List<Product> findByCategoryIdAndRestaurantId(Long categoryId, Long restaurantId);
-	
-	List<Product> findTop8ByRestaurantIdOrderByCreateAtDesc(Long restaurantId);
-	 
+
+	List<Product> findTop8ByRestaurantIdAndStatusOrderByCreateAtDesc(Long restaurantId, int status);
+
 	List<Product> findByRestaurantAndCategory(Restaurant restaurant, Category category); 
 	
 	List<Product> findByCategoryItem(CategoryItem categoryItem);
 	
 	List<Product> findByNameContainingIgnoreCase(String name);
-	
-	 Page<Product> findByCategoryIdAndRestaurantId(Long categoryId, Long restaurantId, Pageable pageable);
-	 
-	 List<Product> findByCategoryItemIdAndPriceBetween(Long categoryItemId, Double minPrice, Double maxPrice);
+
+	Page<Product> findByCategoryIdAndRestaurantIdAndStatus(Long categoryId, Long restaurantId, int status, Pageable pageable);
+
+	List<Product> findByCategoryItemIdAndPriceBetween(Long categoryItemId, Double minPrice, Double maxPrice);
 		
 		List<Product> findByCategoryItemId(Long categoryItemId);
 		

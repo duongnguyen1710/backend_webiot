@@ -63,7 +63,7 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public List<Product> getNewProduct(Long restaurantId) {
-		return productRepository.findTop8ByRestaurantIdOrderByCreateAtDesc(restaurantId);
+		return productRepository.findTop8ByRestaurantIdAndStatusOrderByCreateAtDesc(restaurantId, 1); // 🔥 Lọc theo status = 1
 	}
 
 	@Override
@@ -79,7 +79,7 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public Page<Product> getProductsByCategoryAndRestaurant(Long categoryId, Long restaurantId, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
-		return productRepository.findByCategoryIdAndRestaurantId(categoryId, restaurantId, pageable);
+		return productRepository.findByCategoryIdAndRestaurantIdAndStatus(categoryId, restaurantId, 1, pageable); // 🔥 Lọc theo status = 1
 	}
 
 	@Override
