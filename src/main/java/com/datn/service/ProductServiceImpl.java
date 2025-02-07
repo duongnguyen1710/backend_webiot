@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.datn.entity.Category;
@@ -108,8 +109,9 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public Page<Product> getProductsByRestaurantWithPagination(Long restaurantId, int page, int size) {
-		 Pageable pageable = PageRequest.of(page, size);
-	        return productRepository.findByRestaurantId(restaurantId, pageable);
+		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createAt")); // 🔥 Sắp xếp theo ngày tạo mới nhất
+
+		return productRepository.findByRestaurantId(restaurantId, pageable);
 	}
 
 }
