@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.Date;
 
+import com.datn.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,11 +21,6 @@ import com.datn.entity.OrderItem;
 import com.datn.entity.Orders;
 import com.datn.entity.Restaurant;
 import com.datn.entity.User;
-import com.datn.repository.AddressRepository;
-import com.datn.repository.CartService;
-import com.datn.repository.OrderItemRepository;
-import com.datn.repository.OrdersRepository;
-import com.datn.repository.UserRepository;
 import com.datn.request.OrderRequest;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -45,6 +41,12 @@ public class OrderServiceImp implements OrderService {
 	
 	@Autowired
 	private RestaurantService restaurantService;
+
+	@Autowired
+	private CartItemRepository cartItemRepository;
+
+	@Autowired
+	private CartRepository cartRepository;
 	
 	@Autowired
 	private CartService cartService;
@@ -96,6 +98,13 @@ public class OrderServiceImp implements OrderService {
 
 		Orders savedOrder = orderRepository.save(createdOrder);
 		restaurant.getOrders().add(savedOrder);
+
+		// Xoá toàn bộ CartItem của user sau khi tạo đơn hàng
+		cartItemRepository.deleteAll(cart.getItems());
+
+		cart.getItems().clear();
+		cartRepository.save(cart);
+
 
 		return createdOrder;
 	}
