@@ -244,6 +244,13 @@ public class OrderController {
 			return new ResponseEntity<>("Đơn hàng đã được thanh toán thành công, không cần thanh toán lại!", HttpStatus.BAD_REQUEST);
 		}
 
+		// Kiểm tra địa chỉ mới từ request
+		Address newAddress = addressRepository.findById(retryRequest.getAddressId())
+				.orElseThrow(() -> new RuntimeException("Address not found"));
+
+		// Cập nhật địa chỉ giao hàng mới
+		order.setDeliveryAddress(newAddress);
+
 		// Xử lý phương thức thanh toán mới từ request
 		switch (retryRequest.getPaymentMethod().toLowerCase()) {
 			case "vnpay":
@@ -259,7 +266,11 @@ public class OrderController {
 				order.setPaymentType(5); // Momo
 				break;
 			case "cod":
-				return new ResponseEntity<>("Không thể thanh toán lại bằng COD!", HttpStatus.BAD_REQUEST);
+				// Nếu chọn COD, cập nhật trạng thái thanh toán là "Chưa thanh toán"
+				order.setPaymentType(4); // COD
+				order.setStatusPayment(0); // 0: Chưa thanh toán
+				ordersRepository.save(order);
+				return new ResponseEntity<>("Thanh toán lại bằng COD thành công! Đơn hàng sẽ được giao đến bạn.", HttpStatus.OK);
 			default:
 				return new ResponseEntity<>("Phương thức thanh toán không hợp lệ!", HttpStatus.BAD_REQUEST);
 		}
@@ -285,6 +296,8 @@ public class OrderController {
 				return new ResponseEntity<>("Có lỗi xảy ra khi xử lý thanh toán!", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+
 
 
 	@GetMapping("/orders/user")
