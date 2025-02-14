@@ -52,6 +52,9 @@ public class OrderController {
 
 	@Autowired
 	private CartService cartService;
+
+	@Autowired
+	private AddressRepository addressRepository;
 	
 //	@Autowired
 //	private PaypalServices paypalServices;
@@ -139,12 +142,16 @@ public class OrderController {
 			return new ResponseEntity<>("Chỉ có thể mua lại đơn hàng đã hoàn thành!", HttpStatus.BAD_REQUEST);
 		}
 
+		// Lấy địa chỉ mới từ request
+		Address newAddress = addressRepository.findById(reorderRequest.getAddressId())
+				.orElseThrow(() -> new RuntimeException("Địa chỉ không hợp lệ!"));
+
 		// Tạo đơn hàng mới
 		Orders newOrder = new Orders();
 		newOrder.setCustomer(user);
 		newOrder.setCreateAt(new Date());
 		newOrder.setOrderStatus("Chưa giải quyết");
-		newOrder.setDeliveryAddress(oldOrder.getDeliveryAddress());
+		newOrder.setDeliveryAddress(newAddress); // Cập nhật địa chỉ mới
 		newOrder.setOrderType(2);
 		newOrder.setRestaurant(oldOrder.getRestaurant());
 
@@ -214,6 +221,7 @@ public class OrderController {
 
 		return new ResponseEntity<>("Có lỗi xảy ra khi xử lý đơn hàng mới!", HttpStatus.INTERNAL_SERVER_ERROR);
 	}
+
 
 	@PostMapping("/orders/retry-payment/{orderId}")
 	public ResponseEntity<?> retryPayment(@PathVariable Long orderId,
