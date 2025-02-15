@@ -9,4 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RetryPaymentRequest {
     private String paymentMethod;
+    private int addressId;
 }
