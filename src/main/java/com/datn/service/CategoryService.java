@@ -31,4 +31,11 @@ public interface CategoryService {
     Page<CategoryItem> findRestaurantsCategory(Long restaurantId, Pageable pageable);
     
     Page<Category> findCategoryByRestaurantId(Long restaurantId, Pageable pageable);
+
+	public CategoryItem findCategoryItemById(Long id) throws Exception;
+
+	public CategoryItem saveCategoryItem(CategoryItem categoryItem) throws Exception;
+
+	void deleteCategoryItemById(Long id) throws Exception;
+
 }

@@ -133,4 +133,31 @@ public class AdminCategoryController {
 	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 	        }
 	    }
+
+	@DeleteMapping("/category-item/{id}")
+	public ResponseEntity<String> deleteCategoryItem(@PathVariable Long id) {
+		try {
+			categoryService.deleteCategoryItemById(id);
+			return ResponseEntity.ok("CategoryItem deleted successfully.");
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("CategoryItem not found.");
+		}
+	}
+
+	@PutMapping("/category-item/{id}")
+	public ResponseEntity<CategoryItem> updateCategoryItem(
+			@PathVariable Long id,
+			@RequestBody CategoryItemRequest updatedItem) {
+		try {
+			CategoryItem categoryItem = categoryService.findCategoryItemById(id);
+			categoryItem.setName(updatedItem.getName());
+			categoryItem.setCategory(categoryService.findCategoryById(updatedItem.getCategoryId()));
+
+			CategoryItem savedItem = categoryService.saveCategoryItem(categoryItem);
+			return ResponseEntity.ok(savedItem);
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+		}
+	}
+
 }
