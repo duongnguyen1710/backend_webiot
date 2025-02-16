@@ -108,6 +108,24 @@ public class CategoryServiceImpl implements CategoryService {
 		return categoryRepository.findByRestaurantId(restaurantId, pageable);
 	}
 
+	@Override
+	public CategoryItem findCategoryItemById(Long id) throws Exception {
+		return categoryItemRepository.findById(id)
+				.orElseThrow(() -> new Exception("CategoryItem not found with id: " + id));
+	}
+
+	@Override
+	public CategoryItem saveCategoryItem(CategoryItem categoryItem) throws Exception {
+		return categoryItemRepository.save(categoryItem);
+	}
+
+	@Override
+	public void deleteCategoryItemById(Long id) throws Exception {
+		CategoryItem categoryItem = findCategoryItemById(id);
+		categoryItemRepository.delete(categoryItem);
+	}
+
+
 //	@Override
 //	public CategoryItem updateStock(Long id) throws Exception {
 //		Optional<CategoryItem> optionalCategoryItem = categoryItemRepository.findById(id);
