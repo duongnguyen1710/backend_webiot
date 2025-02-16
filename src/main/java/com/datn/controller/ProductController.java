@@ -1,5 +1,6 @@
 package com.datn.controller;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,20 +84,19 @@ public class ProductController {
 	}
 
 	@GetMapping("/filter")
-	public List<Product> getProductsByCategoryItem1(
-	        @RequestParam(required = false) Long categoryItemId,
-	        @RequestParam(required = false) Double minPrice,
-	        @RequestParam(required = false) Double maxPrice) {
-	    
-	    System.out.println("Category Item ID: " + categoryItemId);
-	    System.out.println("Min Price: " + minPrice);
-	    System.out.println("Max Price: " + maxPrice);
+	public ResponseEntity<List<Product>> getProductsByCategoryItem1(
+			@RequestParam(required = false) Long categoryItemId,
+			@RequestParam(required = false) Double minPrice,
+			@RequestParam(required = false) Double maxPrice) {
 
-	    List<Product> products = productService.getProductsByCategoryItem1(categoryItemId, minPrice, maxPrice);
+		if (categoryItemId == null) {
+			return ResponseEntity.badRequest().body(Collections.emptyList());
+		}
 
-	    System.out.println("Products found: " + products.size());
-	    return products;
+		List<Product> products = productService.getProductsByCategoryItem1(categoryItemId, minPrice, maxPrice);
+		return ResponseEntity.ok(products);
 	}
+
 
 
 

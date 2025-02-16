@@ -1,5 +1,6 @@
 package com.datn.service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -17,12 +18,16 @@ import com.datn.entity.Product;
 import com.datn.entity.Restaurant;
 import com.datn.repository.ProductRepository;
 import com.datn.request.CreateProductRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class ProductServiceImpl implements ProductService {
 
 	@Autowired
 	private ProductRepository productRepository;
+
+	@Autowired
+	private CloudinaryService cloudinaryService;
 
 	@Override
 	public Product createProduct(CreateProductRequest req, Category category, CategoryItem categoryItem,
@@ -41,6 +46,32 @@ public class ProductServiceImpl implements ProductService {
 		Product saveProduct = productRepository.save(product);
 		restaurant.getProducts().add(saveProduct);
 		return saveProduct;
+	}
+
+	@Override
+	public Product createProduct1(CreateProductRequest req, Category category, CategoryItem categoryItem, Restaurant restaurant, List<MultipartFile> imageFiles) throws IOException {
+		Product product = new Product();
+		product.setCategory(category);
+		product.setCategoryItem(categoryItem);
+		product.setRestaurant(restaurant);
+		product.setName(req.getName());
+		product.setDescription(req.getDescription());
+		product.setPrice(req.getPrice());
+		product.setCreateAt(LocalDateTime.now());
+		product.setStatus(1); // Còn hàng
+
+		// Xử lý ảnh
+		List<String> imageUrls;
+		if (imageFiles == null || imageFiles.isEmpty()) {
+			// Nếu không có ảnh tải lên, dùng ảnh mặc định
+			imageUrls = List.of("https://res.cloudinary.com/your_cloud_name/image/upload/v1700000000/default-product.jpg");
+		} else {
+			// Upload ảnh lên Cloudinary
+			imageUrls = cloudinaryService.uploadImages(imageFiles);
+		}
+
+		product.setImages(imageUrls); // Lưu danh sách URL vào database
+		return productRepository.save(product);
 	}
 
 	@Override

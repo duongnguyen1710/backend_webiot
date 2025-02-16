@@ -3,30 +3,21 @@ package com.datn.controller;
 import java.util.List;
 import java.util.Optional;
 
+import com.datn.entity.*;
 import com.datn.repository.ProductRepository;
+import com.datn.service.CloudinaryService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.datn.entity.Product;
-import com.datn.entity.Restaurant;
-import com.datn.entity.User;
 import com.datn.request.CreateProductRequest;
 import com.datn.service.ProductService;
 import com.datn.service.RestaurantService;
 import com.datn.service.UserService;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @CrossOrigin
@@ -44,12 +35,35 @@ public class AdminProductController {
 	@Autowired
 	private ProductRepository productRepository;
 
-	@PostMapping
+	@Autowired
+	private CloudinaryService cloudinaryService;
+
+	@PostMapping("/he")
 	public ResponseEntity<Product> createProduct(@RequestBody CreateProductRequest req,
 			@RequestHeader("Authorization") String jwt) throws Exception {
 		User user = userService.findUserByJwtToken(jwt);
 		Restaurant restaurant = restaurantService.getRestaurantByUserId(user.getId());
 		Product product = productService.createProduct(req, req.getCategory(), req.getCategoryItem(), restaurant);
+
+		return new ResponseEntity<>(product, HttpStatus.CREATED);
+	}
+
+	@PostMapping(consumes = {"multipart/form-data"})
+	public ResponseEntity<Product> createProduct(
+			@RequestPart("request") String requestJson,
+			@RequestPart(value = "images", required = false) List<MultipartFile> images,
+			@RequestHeader("Authorization") String jwt) throws Exception {
+
+		// Chuyển JSON từ chuỗi thành object CreateProductRequest
+		ObjectMapper objectMapper = new ObjectMapper();
+		CreateProductRequest req = objectMapper.readValue(requestJson, CreateProductRequest.class);
+
+		// Lấy user và restaurant từ JWT
+		User user = userService.findUserByJwtToken(jwt);
+		Restaurant restaurant = restaurantService.getRestaurantByUserId(user.getId());
+
+		// Gọi service để tạo sản phẩm
+		Product product = productService.createProduct1(req, req.getCategory(), req.getCategoryItem(), restaurant, images);
 
 		return new ResponseEntity<>(product, HttpStatus.CREATED);
 	}
@@ -78,28 +92,61 @@ public class AdminProductController {
 		}
 	}
 	
-	@PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(
-            @PathVariable Long id,
-            @RequestBody Product updatedProduct) {
-        try {
-            Product product = productService.findProductById(id);
+//	@PutMapping("/{id}")
+//    public ResponseEntity<Product> updateProduct(
+//            @PathVariable Long id,
+//            @RequestBody Product updatedProduct) {
+//        try {
+//            Product product = productService.findProductById(id);
+//
+//            product.setName(updatedProduct.getName());
+//            product.setDescription(updatedProduct.getDescription());
+//            product.setPrice(updatedProduct.getPrice());
+//            product.setCategory(updatedProduct.getCategory());
+//            product.setCategoryItem(updatedProduct.getCategoryItem());
+//            product.setImages(updatedProduct.getImages());
+//            product.setStatus(updatedProduct.getStatus());
+//
+//            Product savedProduct = productService.save(product);
+//
+//            return ResponseEntity.ok(savedProduct);
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+//        }
+//    }
 
-            product.setName(updatedProduct.getName());
-            product.setDescription(updatedProduct.getDescription());
-            product.setPrice(updatedProduct.getPrice());
-            product.setCategory(updatedProduct.getCategory());
-            product.setCategoryItem(updatedProduct.getCategoryItem());
-            product.setImages(updatedProduct.getImages());
-            product.setStatus(updatedProduct.getStatus());
+	@PutMapping(value = "/{id}", consumes = {"multipart/form-data"})
+	public ResponseEntity<Product> updateProduct(
+			@PathVariable Long id,
+			@RequestPart("request") String requestJson,
+			@RequestPart(value = "images", required = false) List<MultipartFile> images) {
+		try {
+			// Chuyển JSON từ chuỗi thành object
+			ObjectMapper objectMapper = new ObjectMapper();
+			CreateProductRequest updatedProduct = objectMapper.readValue(requestJson, CreateProductRequest.class);
 
-            Product savedProduct = productService.save(product);
+			Product product = productService.findProductById(id);
 
-            return ResponseEntity.ok(savedProduct);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-    }
+			product.setName(updatedProduct.getName());
+			product.setDescription(updatedProduct.getDescription());
+			product.setPrice(updatedProduct.getPrice());
+			product.setCategory(updatedProduct.getCategory());
+			product.setCategoryItem(updatedProduct.getCategoryItem());
+
+			// ✅ Nếu có ảnh mới, tải lên Cloudinary và cập nhật danh sách ảnh
+			if (images != null && !images.isEmpty()) {
+				List<String> imageUrls = cloudinaryService.uploadImages(images);
+				product.setImages(imageUrls);
+			}
+
+			Product savedProduct = productService.save(product);
+			return ResponseEntity.ok(savedProduct);
+
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
+
 
 	@PutMapping("/{productId}/update-status")
 	public ResponseEntity<?> updateProductStatus(@PathVariable Long productId, @RequestParam int status) {
