@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserProfileRequest {
     private String fullName;
-    private String avatar;
+//    private String avatar;
 }
