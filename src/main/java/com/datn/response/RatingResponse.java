@@ -18,4 +18,5 @@ public class RatingResponse {
     private double stars;
     private String comment;
     private LocalDateTime createAt;
+    private String status;
 }

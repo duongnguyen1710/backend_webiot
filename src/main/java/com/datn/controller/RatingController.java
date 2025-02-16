@@ -52,8 +52,19 @@ public class RatingController {
 		}
 
 		// 🔹 Kiểm tra nếu sản phẩm đã được người dùng đánh giá
-		if (user.getRatedProductIds().contains(productId)) {
-			return ResponseEntity.badRequest().body("You have already rated this product");
+		boolean alreadyRated = user.getRatedProductIds().contains(productId);
+		if (alreadyRated) {
+			RatingResponse response = new RatingResponse(
+					productId,
+					product.getName(),
+					user.getId(),
+					user.getFullName(),
+					ratingRequest.getStars(),
+					ratingRequest.getComment(),
+					LocalDateTime.now(),
+					"Đánh giá rồi" // ✅ Trả về trạng thái "đánh giá rồi"
+			);
+			return ResponseEntity.ok(response);
 		}
 
 		// 🔹 Kiểm tra số sao hợp lệ
@@ -79,7 +90,7 @@ public class RatingController {
 		user.getRatedProductIds().add(productId);
 		userService.save(user);
 
-		// 🔹 Tạo response DTO
+		// 🔹 Tạo response DTO với status "Đánh giá thành công"
 		RatingResponse response = new RatingResponse(
 				productId,
 				product.getName(),
@@ -87,11 +98,13 @@ public class RatingController {
 				user.getFullName(),
 				ratingRequest.getStars(),
 				ratingRequest.getComment(),
-				rating.getCreateAt()
+				rating.getCreateAt(),
+				"Đánh giá thành công" // ✅ Trả về trạng thái "đánh giá thành công"
 		);
 
 		return ResponseEntity.ok(response);
 	}
+
 
 
 
