@@ -40,4 +40,6 @@ public interface ProductService {
     
     Page<Product> getProductsByRestaurantWithPagination(Long restaurantId, int page, int size);
 
+	public Page<Product> getAllProducts(int page, int size);
+
 }

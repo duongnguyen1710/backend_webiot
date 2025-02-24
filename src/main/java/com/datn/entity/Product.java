@@ -50,6 +50,7 @@ public class Product {
 	private Store store;
 	
 	@ManyToOne
+	@JsonIgnore
 	private Restaurant restaurant;
 	
 	private Date creationDate;

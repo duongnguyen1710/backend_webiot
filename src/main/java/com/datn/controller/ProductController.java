@@ -97,6 +97,13 @@ public class ProductController {
 		return ResponseEntity.ok(products);
 	}
 
+	@GetMapping("/all")
+	public ResponseEntity<Page<Product>> getAllProducts(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size) {
+		Page<Product> products = productService.getAllProducts(page, size);
+		return ResponseEntity.ok(products);
+	}
 
 
 

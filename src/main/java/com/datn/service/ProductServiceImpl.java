@@ -145,4 +145,10 @@ public class ProductServiceImpl implements ProductService {
 		return productRepository.findByRestaurantId(restaurantId, pageable);
 	}
 
+	@Override
+	public Page<Product> getAllProducts(int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		return productRepository.findAll(pageable);
+	}
+
 }
