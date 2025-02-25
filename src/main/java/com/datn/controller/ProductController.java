@@ -74,14 +74,15 @@ public class ProductController {
     }
 
 	@GetMapping("/page/{categoryId}/{restaurantId}")
-	public Page<Product> getProducts(
+	public ResponseEntity<Page<Product>> getActiveProducts(
 			@PathVariable Long categoryId,
 			@PathVariable Long restaurantId,
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "10") int size
-	) {
-		return productService.getProductsByCategoryAndRestaurant(categoryId, restaurantId, page, size);
+			@RequestParam(defaultValue = "10") int size) {
+		Page<Product> products = productService.getActiveProductsByCategoryAndRestaurant(categoryId, restaurantId, page, size);
+		return ResponseEntity.ok(products);
 	}
+
 
 	@GetMapping("/filter")
 	public ResponseEntity<List<Product>> getProductsByCategoryItem1(
@@ -97,11 +98,19 @@ public class ProductController {
 		return ResponseEntity.ok(products);
 	}
 
+//	@GetMapping("/all")
+//	public ResponseEntity<Page<Product>> getAllProducts(
+//			@RequestParam(defaultValue = "0") int page,
+//			@RequestParam(defaultValue = "10") int size) {
+//		Page<Product> products = productService.getAllProducts(page, size);
+//		return ResponseEntity.ok(products);
+//	}
+
 	@GetMapping("/all")
-	public ResponseEntity<Page<Product>> getAllProducts(
+	public ResponseEntity<Page<Product>> getAllActiveProducts(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size) {
-		Page<Product> products = productService.getAllProducts(page, size);
+		Page<Product> products = productService.getAllActiveProducts(page, size);
 		return ResponseEntity.ok(products);
 	}
 

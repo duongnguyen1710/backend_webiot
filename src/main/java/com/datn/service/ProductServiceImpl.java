@@ -151,4 +151,16 @@ public class ProductServiceImpl implements ProductService {
 		return productRepository.findAll(pageable);
 	}
 
+	@Override
+	public Page<Product> getAllActiveProducts(int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		return productRepository.findByStatus(1, pageable);
+	}
+
+	@Override
+	public Page<Product> getActiveProductsByCategoryAndRestaurant(Long categoryId, Long restaurantId, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		return productRepository.findByCategoryIdAndRestaurantIdAndStatus(categoryId, restaurantId, 1, pageable);
+	}
+
 }

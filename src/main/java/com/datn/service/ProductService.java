@@ -42,4 +42,8 @@ public interface ProductService {
 
 	public Page<Product> getAllProducts(int page, int size);
 
+	public Page<Product> getAllActiveProducts(int page, int size);
+
+	public Page<Product> getActiveProductsByCategoryAndRestaurant(Long categoryId, Long restaurantId, int page, int size);
+
 }
