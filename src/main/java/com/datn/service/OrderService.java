@@ -29,7 +29,9 @@ public interface OrderService {
 	public Orders getOrderById(Long id);
 	
 	public Orders updateOrderStatus(Long orderId, String newStatus);
-	
+
+	public Orders updateOrderStatus1(Long orderId, String newStatus);
+
 	public Long getTotalRevenue();
 	
 	 public Long getTotalOrders();
