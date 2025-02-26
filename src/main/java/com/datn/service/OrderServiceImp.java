@@ -27,6 +27,23 @@ import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class OrderServiceImp implements OrderService {
+	@Override
+	public Orders updateOrderStatus1(Long orderId, String newStatus) {
+		Orders order = orderRepository.findById(orderId)
+				.orElseThrow(() -> new EntityNotFoundException("Order not found with ID: " + orderId));
+
+		// Cập nhật trạng thái đơn hàng
+		order.setOrderStatus(newStatus);
+
+		// Nếu phương thức thanh toán là 4, tự động cập nhật trạng thái thanh toán
+		if (order.getPaymentType() == 4) {
+			order.updateStatusPayment(1); // Giả sử 1 là trạng thái "Đã thanh toán"
+		}
+
+		// Lưu vào database
+		return orderRepository.save(order);
+	}
+
 	@Autowired
 	private OrdersRepository orderRepository;
 	

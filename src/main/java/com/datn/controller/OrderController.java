@@ -333,4 +333,13 @@ public class OrderController {
 
 		return ordersRepository.findByCreateAtBetweenOptional(startDate, endDate, pageable);
 	}
+
+	@PutMapping("/{orderId}/status")
+	public ResponseEntity<Orders> updateOrderStatus(@RequestHeader("Authorization") String jwt,
+													@PathVariable Long orderId, @RequestParam String status) {
+
+		Orders updatedOrder = orderService.updateOrderStatus1(orderId, status);
+
+		return ResponseEntity.ok(updatedOrder);
+	}
 }
