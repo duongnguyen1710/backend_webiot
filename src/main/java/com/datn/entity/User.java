@@ -48,4 +48,9 @@ public class User {
 	 @JsonIgnore
 	    @ElementCollection
 	    private List<Long> ratedProductIds = new ArrayList<>(); // Lưu danh sách ID sản phẩm đã đánh giá
+
+	@JsonIgnore
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+	private List<RatingProduct> ratingProducts = new ArrayList<>();
+
 }

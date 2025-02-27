@@ -77,4 +77,9 @@ public class Product {
     }
 	
 	private int status;
+
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "product")
+	@JsonIgnore
+	private List<RatingProduct> ratingProducts = new ArrayList<>();
+
 }
