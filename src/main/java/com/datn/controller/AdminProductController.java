@@ -167,4 +167,14 @@ public class AdminProductController {
 		return ResponseEntity.ok("Cập nhật trạng thái sản phẩm thành công! Trạng thái mới: " + (status == 1 ? "Còn hàng" : "Hết hàng"));
 	}
 
+	@GetMapping("/countAvailable")
+	public long countAvailableProducts() {
+		return productRepository.countByStatus(1);
+	}
+
+	@GetMapping("/countTotal")
+	public long countTotalProducts() {
+		return productRepository.count();
+	}
+
 }

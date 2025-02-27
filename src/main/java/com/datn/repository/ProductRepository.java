@@ -34,5 +34,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
 	Page<Product> findByStatus(int status, Pageable pageable);
 
+	long countByStatus(int status);
+
 
 }
