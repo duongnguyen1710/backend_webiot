@@ -170,4 +170,10 @@ public class ProductServiceImpl implements ProductService {
 				.orElse(0.0);
 	}
 
+	@Override
+	public Page<Product> getProductsByCategory(Long categoryId, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		return productRepository.findByCategoryId(categoryId, pageable);
+	}
+
 }

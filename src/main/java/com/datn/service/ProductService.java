@@ -47,4 +47,6 @@ public interface ProductService {
 	public Page<Product> getActiveProductsByCategoryAndRestaurant(Long categoryId, Long restaurantId, int page, int size);
 
 	public double getAverageRating(Long productId);
+
+	public Page<Product> getProductsByCategory(Long categoryId, int page, int size);
 }

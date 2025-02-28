@@ -100,6 +100,29 @@ public class BlogServiceImpl implements BlogService {
 		return blogRepository.save(blog);
 	}
 
+	@Override
+	public Blog updateBlog1(Long id, Blog updatedBlog, List<MultipartFile> imageFiles) throws IOException {
+		return blogRepository.findById(id).map(blog -> {
+			blog.setTitle(updatedBlog.getTitle());
+			blog.setContent(updatedBlog.getContent());
+			blog.setCategory(updatedBlog.getCategory());
+			blog.setUpdatedAt(LocalDateTime.now());
+
+			// Xử lý ảnh: nếu có ảnh mới, upload lên Cloudinary, nếu không thì giữ ảnh cũ
+			if (imageFiles != null && !imageFiles.isEmpty()) {
+				try {
+					List<String> newImageUrls = cloudinaryService.uploadImages(imageFiles);
+					blog.setImages(newImageUrls);
+				} catch (IOException e) {
+					throw new RuntimeException("Lỗi khi upload ảnh lên Cloudinary: " + e.getMessage());
+				}
+			}
+
+			return blogRepository.save(blog);
+		}).orElseThrow(() -> new RuntimeException("Blog not found with id: " + id));
+	}
+
+
 //	@Override
 //	public Page<Blog> getAllBlogsPaginated(int page, int size) {
 //		Pageable pageable = PageRequest.of(page, size);

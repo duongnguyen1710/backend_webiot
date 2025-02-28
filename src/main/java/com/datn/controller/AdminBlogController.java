@@ -84,12 +84,30 @@ public class AdminBlogController {
 
 
     // Sửa blog
-    @PutMapping("/{id}")
-    public ResponseEntity<Blog> updateBlog(@PathVariable Long id, @RequestBody Blog blog) {
+//    @PutMapping("/{id}")
+//    public ResponseEntity<Blog> updateBlog(@PathVariable Long id, @RequestBody Blog blog) {
+//        try {
+//            return ResponseEntity.ok(blogService.updateBlog(id, blog));
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.notFound().build();
+//        }
+//    }
+
+    @PutMapping(value = "/{id}", consumes = {"multipart/form-data"})
+    public ResponseEntity<Blog> updateBlog(
+            @PathVariable Long id,
+            @RequestPart("request") String requestJson,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images) {
         try {
-            return ResponseEntity.ok(blogService.updateBlog(id, blog));
+            ObjectMapper objectMapper = new ObjectMapper();
+            Blog updatedBlog = objectMapper.readValue(requestJson, Blog.class);
+
+            Blog blog = blogService.updateBlog1(id, updatedBlog, images);
+            return ResponseEntity.ok(blog);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 

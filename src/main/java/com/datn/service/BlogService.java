@@ -28,5 +28,6 @@ public interface BlogService {
 	 public List<Blog> getLatestBlogs();
 
 	public Blog createBlog1(Blog blog, List<MultipartFile> imageFiles) throws IOException;
-	
+
+	public Blog updateBlog1(Long id, Blog updatedBlog, List<MultipartFile> imageFiles) throws IOException;
 }

@@ -10,6 +10,8 @@ import com.datn.entity.Category;
 import com.datn.entity.CategoryItem;
 import com.datn.entity.Product;
 import com.datn.entity.Restaurant;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 	List<Product> findByRestaurantId(Long restaurantId);
@@ -35,6 +37,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 	Page<Product> findByStatus(int status, Pageable pageable);
 
 	long countByStatus(int status);
+
+	@Query("SELECT p FROM Product p WHERE p.category.id = :categoryId")
+	Page<Product> findByCategoryId(@Param("categoryId") Long categoryId, Pageable pageable);
+
 
 
 }

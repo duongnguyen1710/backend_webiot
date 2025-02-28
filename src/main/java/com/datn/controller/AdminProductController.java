@@ -177,4 +177,18 @@ public class AdminProductController {
 		return productRepository.count();
 	}
 
+	@GetMapping("/category/{categoryId}")
+	public ResponseEntity<Page<Product>> getProductsByCategory(
+			@PathVariable Long categoryId,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size) {
+		try {
+			Page<Product> products = productService.getProductsByCategory(categoryId, page, size);
+			return ResponseEntity.ok(products);
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+
 }
