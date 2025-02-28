@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -104,25 +105,44 @@ public class ZaloPayServiceImpl implements ZaloPayService {
         JSONObject result = new JSONObject(resultJsonStr.toString());
 
         // Lưu thông tin giao dịch vào database
-        ZaloPayTransaction transaction = ZaloPayTransaction.builder()
-                .appTransId(appTransId)
-                .appId(Long.parseLong(appId))
-                .status(0) // Ban đầu đặt là chưa thanh toán
-                .amount(totalPrice)
-                .bankCode("")
-                .pmcId("")
-                .discountAmount(0L)
-                .checksum(mac)
-                .createdAt(new Date().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime())
-                .build();
+        // Kiểm tra xem giao dịch đã tồn tại chưa
+        Optional<ZaloPayTransaction> existingTransaction = zaloPayRepository.findTopByAppTransIdOrderByIdDesc(appTransId);
 
-        zaloPayRepository.save(transaction);
+
+        if (existingTransaction.isPresent()) {
+            // Nếu đã tồn tại, cập nhật trạng thái thay vì tạo mới
+            ZaloPayTransaction transaction = existingTransaction.get();
+            transaction.setStatus(0); // Reset trạng thái về "Chưa thanh toán"
+            transaction.setCreatedAt(LocalDateTime.now());
+            zaloPayRepository.save(transaction);
+        } else {
+            // Nếu chưa tồn tại, tạo giao dịch mới
+            ZaloPayTransaction transaction = ZaloPayTransaction.builder()
+                    .appTransId(appTransId)
+                    .appId(Long.parseLong(appId))
+                    .status(0) // Ban đầu đặt là chưa thanh toán
+                    .amount(totalPrice)
+                    .bankCode("")
+                    .pmcId("")
+                    .discountAmount(0L)
+                    .checksum(mac)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            zaloPayRepository.save(transaction);
+        }
+
+
 
         ZaloPayResponse response = new ZaloPayResponse();
         response.setOrderUrl(result.getString("order_url"));
 
         return response;
     }
+    public String generateNewAppTransId(Long orderId) {
+        return getCurrentTimeString("yyMMdd") + "_" + orderId + "_" + System.currentTimeMillis();
+    }
+
 
     private String getCurrentTimeString(String format) {
         Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT+7"));

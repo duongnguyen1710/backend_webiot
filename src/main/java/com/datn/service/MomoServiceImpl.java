@@ -36,7 +36,7 @@ public class MomoServiceImpl implements  MomoService{
     @Override
     @Transactional
     public MomoResponse createMomoPayment(Orders order) throws Exception {
-        long totalPrice = order.getTotalPrice() + 30000;
+        long totalPrice = order.getTotalPrice();
         String orderId = partnerCode + new Date().getTime();
         String requestId = orderId;
         String orderInfo = "Payment for the order #" + order.getId();

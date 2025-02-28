@@ -30,8 +30,7 @@ public class ZaloPayController {
             String pmcId = params.get("pmcid");
             String checksum = params.get("checksum");
 
-            Optional<ZaloPayTransaction> optionalTransaction = Optional.ofNullable(zaloPayRepository.findByAppTransId(appTransId));
-
+            Optional<ZaloPayTransaction> optionalTransaction = zaloPayRepository.findTopByAppTransIdOrderByIdDesc(appTransId);
             if (optionalTransaction.isPresent()) {
                 ZaloPayTransaction transaction = optionalTransaction.get();
 
