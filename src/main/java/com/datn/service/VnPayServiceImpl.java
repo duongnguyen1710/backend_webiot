@@ -32,7 +32,7 @@ public class VnPayServiceImpl implements VnPayService {
         String vnpTxnRef = order.getId().toString();
         String vnpIpAddr = "127.0.0.1";
 
-        Long amount = order.getTotalPrice() * 100 + 30000;
+        Long amount = order.getTotalPrice() * 100;
 
         if (amount <= 0) {
             throw new IllegalArgumentException("Số tiền trong hóa đơn không hợp lệ");

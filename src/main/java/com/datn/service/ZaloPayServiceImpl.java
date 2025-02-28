@@ -64,13 +64,13 @@ public class ZaloPayServiceImpl implements ZaloPayService {
 
         for (OrderItem item : orders.getItems()) {
             JSONObject itemJson = new JSONObject();
-            totalPrice += item.getTotalPrice() + 30000;
+            totalPrice += item.getTotalPrice();
             itemsJsonArray.put(itemJson);
         }
         orderData.put("amount", totalPrice);
 
         Map<String, String> embedData = new HashMap<>();
-        embedData.put("redirecturl", "http://localhost:3001/payment/zalopay/result/");
+        embedData.put("redirecturl", "http://localhost:3007/payment/zalopay/result/");
 
         String itemsJson = itemsJsonArray.toString();
         String embedDataJson = new JSONObject(embedData).toString();
