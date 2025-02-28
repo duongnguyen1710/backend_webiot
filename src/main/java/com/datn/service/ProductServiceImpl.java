@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.datn.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,10 +13,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import com.datn.entity.Category;
-import com.datn.entity.CategoryItem;
-import com.datn.entity.Product;
-import com.datn.entity.Restaurant;
 import com.datn.repository.ProductRepository;
 import com.datn.request.CreateProductRequest;
 import org.springframework.web.multipart.MultipartFile;
@@ -161,6 +158,16 @@ public class ProductServiceImpl implements ProductService {
 	public Page<Product> getActiveProductsByCategoryAndRestaurant(Long categoryId, Long restaurantId, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
 		return productRepository.findByCategoryIdAndRestaurantIdAndStatus(categoryId, restaurantId, 1, pageable);
+	}
+
+	@Override
+	public double getAverageRating(Long productId) {
+		return productRepository.findById(productId)
+				.map(product -> product.getRatings().stream()
+						.mapToDouble(Rating::getStars)
+						.average()
+						.orElse(0.0))
+				.orElse(0.0);
 	}
 
 }

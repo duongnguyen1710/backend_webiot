@@ -40,6 +40,11 @@ public class ProductController {
 		return ResponseEntity.ok(products);
 	}
 
+	@GetMapping("/{id}/average-rating")
+	public double getProductAverageRating(@PathVariable Long id) {
+		return productService.getAverageRating(id);
+	}
+
 //	@GetMapping("/category")
 //	public ResponseEntity<List<Product>> getProductsByRestaurantAndCategory(@RequestParam Long restaurantId,
 //			@RequestParam Long categoryId) {
