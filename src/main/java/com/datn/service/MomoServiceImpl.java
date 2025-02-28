@@ -40,7 +40,7 @@ public class MomoServiceImpl implements  MomoService{
         String orderId = partnerCode + new Date().getTime();
         String requestId = orderId;
         String orderInfo = "Payment for the order #" + order.getId();
-        String redirectUrl = "http://localhost:3000/payment/momo/result/" + order.getId();
+        String redirectUrl = "http://localhost:3001/payment/momo/result";
         String extraData = "";
 
         // Tạo chữ ký (signature)

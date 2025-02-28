@@ -103,7 +103,7 @@ public class ZaloPayServiceImpl implements ZaloPayService {
         }
 
         JSONObject result = new JSONObject(resultJsonStr.toString());
-
+        System.out.println("ZaloPay Response: " + resultJsonStr.toString());
         // Lưu thông tin giao dịch vào database
         // Kiểm tra xem giao dịch đã tồn tại chưa
         Optional<ZaloPayTransaction> existingTransaction = zaloPayRepository.findTopByAppTransIdOrderByIdDesc(appTransId);
