@@ -1,5 +1,6 @@
 package com.datn.service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -13,12 +14,16 @@ import org.springframework.stereotype.Service;
 import com.datn.entity.Blog;
 import com.datn.repository.BlogRepository;
 import com.datn.response.BlogResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class BlogServiceImpl implements BlogService {
 	
 	@Autowired
 	private BlogRepository blogRepository;
+
+	@Autowired
+	private CloudinaryService cloudinaryService;
 	
 	@Override
 	public List<Blog> getAllBlogs() {
@@ -73,6 +78,26 @@ public class BlogServiceImpl implements BlogService {
 	@Override
 	public List<Blog> getLatestBlogs() {
 		return blogRepository.findTop3BlogsByCreatedAtDesc();
+	}
+
+	@Override
+	public Blog createBlog1(Blog blog, List<MultipartFile> imageFiles) throws IOException {
+		blog.setCreatedAt(LocalDateTime.now());
+		blog.setUpdatedAt(LocalDateTime.now());
+
+		// Xử lý ảnh
+		List<String> imageUrls;
+		if (imageFiles == null || imageFiles.isEmpty()) {
+			// Nếu không có ảnh tải lên, dùng ảnh mặc định
+			imageUrls = List.of("https://res.cloudinary.com/your_cloud_name/image/upload/v1700000000/default-blog.jpg");
+		} else {
+			// Upload ảnh lên Cloudinary
+			imageUrls = cloudinaryService.uploadImages(imageFiles);
+		}
+
+		blog.setImages(imageUrls); // Lưu danh sách URL vào database
+
+		return blogRepository.save(blog);
 	}
 
 //	@Override

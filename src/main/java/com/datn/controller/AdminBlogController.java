@@ -7,6 +7,7 @@ import com.datn.service.CloudinaryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -62,10 +63,25 @@ public class AdminBlogController {
     }
 
     //Thêm blog mới
-    @PostMapping
-    public Blog createBlog(@RequestBody Blog blog) {
-        return blogService.createBlog(blog);
+//    @PostMapping
+//    public Blog createBlog(@RequestBody Blog blog) {
+//        return blogService.createBlog(blog);
+//    }
+
+    @PostMapping(consumes = {"multipart/form-data"})
+    public ResponseEntity<Blog> createBlog(
+            @RequestPart("request") String requestJson,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images) throws IOException {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        Blog blog = objectMapper.readValue(requestJson, Blog.class);
+
+        // Gọi service để tạo blog
+        Blog createdBlog = blogService.createBlog1(blog, images);
+
+        return new ResponseEntity<>(createdBlog, HttpStatus.CREATED);
     }
+
 
     // Sửa blog
     @PutMapping("/{id}")
