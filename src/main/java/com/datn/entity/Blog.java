@@ -22,7 +22,8 @@ public class Blog {
 	private Long id;
 	
 	private String title;
-	
+
+	@Column(columnDefinition = "TEXT") // Hỗ trợ lưu văn bản dài
 	private String content;
 	
 	private String category;
